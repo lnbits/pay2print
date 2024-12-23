@@ -1,0 +1,9 @@
+{
+  "repos": [
+    {
+      "id": "pay2print",
+      "organisation": "lnbits",
+      "repository": "pay2print"
+    }
+  ]
+}
