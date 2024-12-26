@@ -1,18 +1,23 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi.responses import FileResponse
 from lnbits.core.crud import get_wallet
 from lnbits.core.models import WalletTypeInfo
-from lnbits.decorators import require_admin_key, require_invoice_key
+from lnbits.core.services import create_invoice
+from lnbits.decorators import check_user_exists, require_admin_key, require_invoice_key
 
 from .crud import (
+    create_print,
     create_printer,
     delete_printer,
+    get_print,
     get_printer,
     get_printers,
     get_prints,
     update_printer,
 )
+from .helpers import print_file_path, safe_file_name
 from .models import CreatePrinter, Print, Printer
 
 pay2print_ext_api = APIRouter(
@@ -44,6 +49,41 @@ async def api_create_printer(
     if data.wallet != key_info.wallet.id:
         await _validate_input_wallet(key_info.wallet.user, data.wallet)
     return await create_printer(key_info.wallet.user, data)
+
+
+@pay2print_ext_api.post(
+    "/upload/{printer_id}",
+    description="Public upload endpoint, returns a payment request.",
+)
+async def api_upload_print(printer_id: str, file: UploadFile) -> str:
+    printer = await get_printer(printer_id)
+    if not printer:
+        raise HTTPException(HTTPStatus.NOT_FOUND, "Printer not found.")
+    if not file or not file.filename or not file.content_type:
+        raise HTTPException(HTTPStatus.BAD_REQUEST, "No file uploaded.")
+    if "application/pdf" not in file.content_type:
+        raise HTTPException(HTTPStatus.BAD_REQUEST, "Only PDF files are supported.")
+    upload_file_path = safe_file_name(file.filename)
+    open(upload_file_path, "wb").write(await file.read())
+    payment = await create_invoice(
+        wallet_id=printer.wallet,
+        amount=100,
+        memo=f"Print payment for file: {file.filename}",
+        extra={"tag": "pay2print"},
+    )
+    await create_print(payment.payment_hash, printer_id, upload_file_path.name)
+    return payment.bolt11
+
+
+@pay2print_ext_api.get("/file/{print_id}", dependencies=[Depends(check_user_exists)])
+async def api_show_file(print_id: str) -> FileResponse:
+    _print = await get_print(print_id)
+    if not _print:
+        raise HTTPException(HTTPStatus.NOT_FOUND, "Print not found.")
+
+    return FileResponse(
+        print_file_path(_print.file), media_type="application/pdf", filename=_print.file
+    )
 
 
 @pay2print_ext_api.put("/printer/{printer_id}")

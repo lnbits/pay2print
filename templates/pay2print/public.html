@@ -1,0 +1,48 @@
+{% extends "public.html" %} {% block toolbar_title %} Printer {{ printer_id }}
+{% endblock %} {% block footer %}{% endblock %} {% block page_container %}
+<q-page-container>
+  <q-page>
+    <q-card class="q-mt-md">
+      <q-card-section v-if="invoice == null" class="q-mb-sm text-center">
+        <h2 class="text-h6">Upload a pdf file to print</h2>
+        <q-uploader
+          class="q-ml-auto q-mr-auto"
+          multiple="false"
+          field-name="file"
+          @uploaded="uploaded"
+          url="/pay2print/api/v1/upload/{{ printer_id }}"
+        ></q-uploader>
+      </q-card-section>
+      <q-card-section
+        v-if="invoice != null && paid == false"
+        class="q-mb-sm text-center"
+      >
+        <h2 class="text-h6">Pay this invoice to print!</h2>
+        <h6 v-text="invoiceAmount"></h6>
+        <lnbits-qrcode :value="invoice"></lnbits-qrcode>
+        <q-btn
+          icon="content_copy"
+          @click="copyText(invoice)"
+          size="1em"
+          color="grey"
+          class="q-mb-xs cursor-pointer"
+          >Copy invoice</q-btn
+        >
+      </q-card-section>
+      <q-card-section
+        v-if="invoice != null && paid == true"
+        class="q-mb-sm text-center"
+      >
+        <h2 class="text-h6">Invoice paid, document is printing!</h2>
+        <q-icon name="done" size="3em" color="green" />
+        <q-icon name="print" size="3em" color="grey" />
+      </q-card-section>
+    </q-card>
+  </q-page>
+</q-page-container>
+{% endblock %} {% block scripts %}
+<script>
+  const amount = {{ amount }};
+</script>
+<script src="{{ static_url_for('pay2print/static', path='js/public.js') }}"></script>
+{% endblock %}

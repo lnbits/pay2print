@@ -1,14 +1,13 @@
 import asyncio
 
 from fastapi import APIRouter
-from lnbits.db import Database
 from loguru import logger
 
+from .crud import db
+from .helpers import print_file, setup_upload_folder
 from .tasks import wait_for_paid_invoices
 from .views import pay2print_ext_generic
 from .views_api import pay2print_ext_api
-
-db = Database("ext_pay2print")
 
 scheduled_tasks: list[asyncio.Task] = []
 
@@ -35,5 +34,16 @@ def pay2print_stop():
 def pay2print_start():
     from lnbits.tasks import create_permanent_unique_task
 
-    task = create_permanent_unique_task("ext_testing", wait_for_paid_invoices)
+    setup_upload_folder()
+    task = create_permanent_unique_task("ext_pay2print", wait_for_paid_invoices)
     scheduled_tasks.append(task)
+
+
+__all__ = [
+    "db",
+    "pay2print_ext",
+    "pay2print_static_files",
+    "pay2print_start",
+    "pay2print_stop",
+    "print_file",
+]

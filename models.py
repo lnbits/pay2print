@@ -23,12 +23,18 @@ class Printer(BaseModel):
     wallet: str
     host: str
     name: str
+    amount: int
+    width: int
+    height: int
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class CreatePrinter(BaseModel):
     wallet: str
     host: str
+    amount: int
+    width: int
+    height: int
     name: Optional[str] = None
 
 
@@ -41,8 +47,3 @@ class Print(BaseModel):
     print_status: PrintStatus = PrintStatus.WAITING
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class CreatePrint(BaseModel):
-    file: str
-    printer: str

@@ -2,7 +2,7 @@
   "id": "pay2print",
   "name": "Pay 2 Print",
   "short_description": "pay sats to print a document",
-  "tile": "https://raw.githubusercontent.com/lnbits/pay2print/main/static/bitcoin-extension.png",
+  "tile": "https://raw.githubusercontent.com/lnbits/pay2print/main/static/printer.png",
   "min_lnbits_version": "1.0.0",
   "donate": "donate@legend.lnbits.com",
   "contributors": [

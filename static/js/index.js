@@ -3,38 +3,150 @@ window.app = Vue.createApp({
   mixins: [windowMixin],
   data() {
     return {
-      pay2printDialog: {
+      printerUrl: '/pay2print/api/v1/printer',
+      printUrl: '/pay2print/api/v1/print',
+      printer: null,
+      printerLabel: null,
+      printers: [],
+      prints: [],
+      printsTable: {
+        columns: [
+          {
+            name: 'file',
+            align: 'left',
+            label: 'file',
+            field: 'file'
+          },
+          {
+            name: 'id',
+            align: 'left',
+            label: 'id',
+            field: 'id'
+          },
+          {
+            name: 'print_status',
+            align: 'left',
+            label: 'print_status',
+            field: 'print_status'
+          },
+          {
+            name: 'payment_status',
+            align: 'left',
+            label: 'payment_status',
+            field: 'payment_status'
+          }
+        ],
+        pagination: {
+          rowsPerPage: 10
+        }
+      },
+      printersTable: {
+        columns: [
+          {
+            name: 'name',
+            align: 'left',
+            label: 'name',
+            field: 'name'
+          },
+          {
+            name: 'host',
+            align: 'left',
+            label: 'host',
+            field: 'host'
+          },
+          {
+            name: 'id',
+            align: 'left',
+            label: 'id',
+            field: 'id'
+          }
+        ],
+        pagination: {
+          rowsPerPage: 10
+        }
+      },
+      printerDialog: {
         show: false,
         data: {}
-      },
-      pay2printData: []
+      }
     }
   },
   methods: {
-    submitForm() {
+    submitPrinterForm() {
+      const method = this.printerDialog.data.id ? 'PUT' : 'POST'
+      const url = this.printerDialog.data.id
+        ? `${this.printerUrl}/${this.printerDialog.data.id}`
+        : this.printerUrl
       LNbits.api
         .request(
-          this.pay2printDialog.data.id ? 'PUT' : 'POST',
-          '/pay2print/api/v1/print',
+          method,
+          url,
           this.g.user.wallets[0].adminkey,
-          this.pay2printDialog.data
+          this.printerDialog.data
         )
         .then(_ => {
-          this.getPay2Prints()
-          this.pay2printDialog.show = false
+          this.getPrinters()
+          this.printerDialog.show = false
+          this.printerDialog.data = {}
         })
         .catch(LNbits.utils.notifyApiError)
     },
-    getPay2Prints() {
+    openUpdatePrinter(printer_id) {
+      const printer = this.printers.find(printer => printer.id === printer_id)
+      this.printerDialog.data = {...printer}
+      this.printerDialog.show = true
+    },
+    openFile(file_name) {
+      const print = this.prints.find(print => print.file === file_name)
+      return `/pay2print/api/v1/file/${print.id}`
+    },
+    getPrints(printer_id) {
       LNbits.api
-        .request('GET', '/pay2print/api/v1/print', this.g.user.wallets[0].inkey)
+        .request(
+          'GET',
+          `${this.printUrl}/${printer_id}`,
+          this.g.user.wallets[0].inkey
+        )
         .then(response => {
-          this.pay2printData = response.data
+          this.prints = response.data
+        })
+        .catch(LNbits.utils.notifyApiError)
+    },
+    getPrinters() {
+      LNbits.api
+        .request('GET', this.printerUrl, this.g.user.wallets[0].inkey)
+        .then(response => {
+          this.printers = response.data
+          if (this.printers.length > 0) {
+            this.printer = this.printers[0].id
+            this.printerLabel = this.printers[0].name
+          }
+        })
+        .catch(LNbits.utils.notifyApiError)
+    },
+    deletePrinter(id) {
+      LNbits.api
+        .request(
+          'DELETE',
+          `${this.printerUrl}/${id}`,
+          this.g.user.wallets[0].adminkey
+        )
+        .then(_ => {
+          this.getPrinters()
         })
         .catch(LNbits.utils.notifyApiError)
     }
   },
+  watch: {
+    printer(val) {
+      if (val) {
+        const printer = this.printers.find(printer => printer.id === val)
+        this.printerLabel = printer.name
+        this.getPrints(val)
+      }
+    }
+  },
   created() {
-    this.getPay2Prints()
+    this.getPrinters()
   }
 })

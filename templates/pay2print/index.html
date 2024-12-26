@@ -1,0 +1,236 @@
+{% extends "base.html" %} {% from "macros.jinja" import window_vars with context
+%} {% block scripts %} {{ window_vars(user) }}
+<script src="{{ static_url_for('pay2print/static', path='js/index.js') }}"></script>
+{% endblock %} {% block page %}
+<q-dialog v-model="printerDialog.show" position="top">
+  <q-card class="q-pa-lg q-pt-xl lnbits__dialog-card">
+    <q-form @submit="submitPrinterForm" class="q-gutter-md">
+      <q-select
+        filled
+        dense
+        emit-value
+        v-model="printerDialog.data.wallet"
+        :options="g.user.walletOptions"
+        label="Wallet *"
+      ></q-select>
+      <q-input
+        filled
+        dense
+        v-model.trim="printerDialog.data.name"
+        type="text"
+        label="Name"
+      ></q-input>
+      <q-input
+        filled
+        dense
+        v-model.trim="printerDialog.data.host"
+        type="text"
+        label="Host *"
+      ></q-input>
+      <q-input
+        filled
+        dense
+        v-model.trim="printerDialog.data.amount"
+        type="text"
+        label="Amount *"
+      ></q-input>
+      <q-input
+        filled
+        dense
+        v-model.trim="printerDialog.data.width"
+        type="text"
+        label="Width *"
+      ></q-input>
+      <q-input
+        filled
+        dense
+        v-model.trim="printerDialog.data.height"
+        type="text"
+        label="Height *"
+      ></q-input>
+      <div class="row q-mt-lg">
+        <q-btn
+          unelevated
+          color="primary"
+          :disable="printerDialog.data.host == null || printerDialog.data.wallet == null"
+          type="submit"
+          v-text="printerDialog.data.id ? 'Update' : 'Create'"
+        ></q-btn>
+        <q-btn v-close-popup flat color="grey" class="q-ml-auto">Cancel</q-btn>
+      </div>
+    </q-form>
+  </q-card>
+</q-dialog>
+
+<q-card>
+  <q-card-section class="q-mb-sm">
+    <q-btn
+      unelevated
+      color="primary"
+      @click="printerDialog.show = true; printerDialog.data = {}"
+      >New Printer</q-btn
+    >
+  </q-card-section>
+</q-card>
+
+<q-card>
+  <q-card-section>
+    <div class="row items-center no-wrap q-mb-md">
+      <div class="col">
+        <h5 class="text-subtitle1 q-my-none">Printers</h5>
+      </div>
+    </div>
+    <q-table
+      flat
+      dense
+      :rows="printers"
+      row-key="id"
+      :columns="printersTable.columns"
+      v-model:pagination="printersTable.pagination"
+    >
+      <template v-slot:header="props">
+        <q-tr :props="props">
+          <q-th style="width: 2%"></q-th>
+          <q-th style="width: 2%"></q-th>
+          <q-th style="width: 2%"></q-th>
+          <q-th style="width: 2%"></q-th>
+          <q-th
+            v-for="col in props.cols"
+            :key="col.name"
+            :props="props"
+            auto-width
+          >
+            <div v-text="col.label"></div>
+          </q-th>
+        </q-tr>
+      </template>
+
+      <template v-slot:body="props">
+        <q-tr :props="props">
+          <q-td>
+            <q-btn
+              flat
+              dense
+              size="xs"
+              @click="openUpdatePrinter(props.row.id)"
+              icon="edit"
+              color="blue"
+            >
+              <q-tooltip>Edit Printer</q-tooltip>
+            </q-btn>
+          </q-td>
+          <q-td>
+            <q-btn
+              flat
+              dense
+              size="xs"
+              @click="deletePrinter(props.row.id)"
+              icon="cancel"
+              color="pink"
+            >
+              <q-tooltip>Delete Printer</q-tooltip>
+            </q-btn>
+          </q-td>
+          <q-td>
+            <q-btn
+              flat
+              dense
+              size="xs"
+              @click="openTestPrint(props.row.id)"
+              target="_blank"
+              icon="print"
+              color="primary"
+            >
+              <q-tooltip>Test Print</q-tooltip>
+            </q-btn>
+          </q-td>
+          <q-td>
+            <q-btn
+              flat
+              dense
+              size="xs"
+              icon="perm_data_setting"
+              color="primary"
+              :href="`/pay2print/public/${props.row.id}`"
+            >
+              <q-tooltip>Public Page</q-tooltip>
+            </q-btn>
+          </q-td>
+          <q-td
+            v-for="col in props.cols"
+            :key="col.name"
+            :props="props"
+            auto-width
+          >
+            <div v-text="col.value"></div>
+          </q-td>
+        </q-tr>
+      </template>
+    </q-table>
+  </q-card-section>
+</q-card>
+
+<q-card class="q-mt-sm">
+  <q-card-section>
+    <div class="row items-center no-wrap q-mb-md">
+      <div class="col">
+        <h5 class="text-subtitle1 q-my-none">Prints</h5>
+        <q-select
+          filled
+          dense
+          emit-value
+          v-model="printer"
+          :display-value="printerLabel"
+          :options="printers"
+          option-value="id"
+          option-label="name"
+          label="Select a printer"
+        ></q-select>
+      </div>
+    </div>
+    <q-table
+      flat
+      dense
+      :rows="prints"
+      row-key="id"
+      :columns="printsTable.columns"
+      v-model:pagination="printsTable.pagination"
+    >
+      <template v-slot:header="props">
+        <q-tr :props="props">
+          <q-th
+            v-for="col in props.cols"
+            :key="col.name"
+            :props="props"
+            auto-width
+          >
+            <div v-text="col.label"></div>
+          </q-th>
+        </q-tr>
+      </template>
+
+      <template v-slot:body="props">
+        <q-tr :props="props">
+          <q-td
+            v-for="col in props.cols"
+            :key="col.name"
+            :props="props"
+            auto-width
+          >
+            <div v-if="col.name === 'file'">
+              <q-btn
+                color="primary"
+                size="sm"
+                :href="openFile(col.value)"
+                target="_blank"
+                v-text="col.value"
+              ></q-btn>
+            </div>
+            <div v-else v-text="col.value"></div>
+          </q-td>
+        </q-tr>
+      </template>
+    </q-table>
+  </q-card-section>
+</q-card>
+{% endblock %}

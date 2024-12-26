@@ -3,16 +3,16 @@ from typing import Optional
 
 from lnbits.db import Database
 
-from .models import CreatePrint, CreatePrinter, Print, Printer
+from .models import CreatePrinter, Print, Printer
 
 db = Database("ext_pay2print")
 
 
-async def create_print(payment_hash: str, data: CreatePrint) -> Print:
+async def create_print(payment_hash: str, printer_id: str, file_name: str) -> Print:
     _print = Print(
         payment_hash=payment_hash,
-        file=data.file,
-        printer=data.printer,
+        file=file_name,
+        printer=printer_id,
     )
     await db.insert("pay2print.print", _print)
     return _print
@@ -37,6 +37,9 @@ async def create_printer(user_id: str, data: CreatePrinter) -> Printer:
         user_id=user_id,
         wallet=data.wallet,
         host=data.host,
+        amount=data.amount,
+        width=data.width,
+        height=data.height,
         name=data.name or "My Printer",
     )
     await db.insert("pay2print.printer", printer)
@@ -44,7 +47,7 @@ async def create_printer(user_id: str, data: CreatePrinter) -> Printer:
 
 
 async def update_printer(printer: Printer) -> Printer:
-    await db.update("pay2print.print", printer)
+    await db.update("pay2print.printer", printer)
     return printer
 
 
