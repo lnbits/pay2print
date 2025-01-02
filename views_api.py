@@ -17,8 +17,9 @@ from .crud import (
     get_prints,
     update_printer,
 )
-from .helpers import print_file_path, safe_file_name
-from .models import CreatePrinter, Print, Printer
+from .helpers import check_printer, print_file_path, safe_file_name
+from .models import CreatePrinter, Print, Printer, UploadPayment
+from .services import print_service
 
 pay2print_ext_api = APIRouter(
     prefix="/api/v1",
@@ -41,6 +42,22 @@ async def api_get_printers(
     return await get_printers(key_info.wallet.user)
 
 
+@pay2print_ext_api.get("/printer/check/{printer_id}")
+async def api_check_printer(
+    printer_id: str,
+    key_info: WalletTypeInfo = Depends(require_invoice_key),
+) -> None:
+    printer = await get_printer(printer_id)
+    if not printer:
+        raise HTTPException(HTTPStatus.NOT_FOUND, "Printer not found.")
+    if key_info.wallet.user != printer.user_id:
+        raise HTTPException(HTTPStatus.FORBIDDEN, "Not your printer.")
+    try:
+        check_printer(printer.host, printer.name)
+    except Exception as exc:
+        raise HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, str(exc)) from exc
+
+
 @pay2print_ext_api.post("/printer")
 async def api_create_printer(
     data: CreatePrinter,
@@ -55,7 +72,7 @@ async def api_create_printer(
     "/upload/{printer_id}",
     description="Public upload endpoint, returns a payment request.",
 )
-async def api_upload_print(printer_id: str, file: UploadFile) -> str:
+async def api_upload_print(printer_id: str, file: UploadFile) -> UploadPayment:
     printer = await get_printer(printer_id)
     if not printer:
         raise HTTPException(HTTPStatus.NOT_FOUND, "Printer not found.")
@@ -72,7 +89,10 @@ async def api_upload_print(printer_id: str, file: UploadFile) -> str:
         extra={"tag": "pay2print"},
     )
     await create_print(payment.payment_hash, printer_id, upload_file_path.name)
-    return payment.bolt11
+
+    return UploadPayment(
+        payment_hash=payment.payment_hash, payment_request=payment.bolt11
+    )
 
 
 @pay2print_ext_api.get("/file/{print_id}", dependencies=[Depends(check_user_exists)])
@@ -130,3 +150,24 @@ async def api_get_prints(printer_id: str) -> list[Print]:
     if not printer:
         raise HTTPException(HTTPStatus.NOT_FOUND, "Printer not found.")
     return await get_prints(printer_id)
+
+
+@pay2print_ext_api.get(
+    "/print/print/{print_id}",
+    description="Admin only, trigger a manual print.",
+)
+async def api_print(
+    print_id: str, key_info: WalletTypeInfo = Depends(require_admin_key)
+):
+    _print = await get_print(print_id)
+    if not _print:
+        raise HTTPException(HTTPStatus.NOT_FOUND, "Print not found.")
+    printer = await get_printer(_print.printer)
+    if not printer:
+        raise HTTPException(HTTPStatus.NOT_FOUND, "Printer not found.")
+    if key_info.wallet.user != printer.user_id:
+        raise HTTPException(HTTPStatus.FORBIDDEN, "Not your printer.")
+    try:
+        await print_service(_print, printer)
+    except Exception as exc:
+        raise HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR, str(exc)) from exc

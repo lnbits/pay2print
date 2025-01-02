@@ -8,9 +8,6 @@ from loguru import logger
 
 upload_dir = Path(settings.lnbits_data_folder, "uploads")
 
-cmd_check_default_printer = ["lpstat", "-d"]
-cmd_print = "lpr"
-
 
 class PrinterError(Exception):
     """Error is thrown we we cannot connect to the printer."""
@@ -32,19 +29,20 @@ def print_file_path(file_name: str) -> Path:
     return Path(upload_dir, file_name)
 
 
-def check_printer():
+def check_printer(host: str, printer_name: str):
     try:
-        lines = run_command(cmd_check_default_printer)
-        if len(lines) == 0:
-            raise PrinterError("No default printer found")
-        logger.debug(f"Default printer: {lines[0]}")
+        lines = run_command(["lpstat", "-h", host, "-a"])
+        logger.debug(f"lpstat -h {host} -a: {lines}")
+        if printer_name not in "\n".join(lines):
+            raise PrinterError(f"Printer {printer_name} not found")
     except Exception as e:
         raise PrinterError(f"Error checking default printer: {e}") from e
 
 
-def print_file(file_name: str):
+def print_file(host: str, printer_name, file_name: str):
     path = print_file_path(file_name)
-    run_command([cmd_print, str(path)])
+    logger.debug(f"Printing {path} to {host} {printer_name}")
+    run_command(["lp", "-h", host, "-d", printer_name, str(path)])
 
 
 def run_command(command: list[str]) -> list[str]:

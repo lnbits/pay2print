@@ -7,6 +7,11 @@ from lnbits.helpers import urlsafe_short_hash
 from pydantic import BaseModel, Field
 
 
+class UploadPayment(BaseModel):
+    payment_hash: str
+    payment_request: str
+
+
 class PrintStatus(str, Enum):
     WAITING = "waiting"
     PRINTING = "printing"

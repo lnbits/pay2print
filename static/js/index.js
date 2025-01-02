@@ -112,6 +112,46 @@ window.app = Vue.createApp({
         })
         .catch(LNbits.utils.notifyApiError)
     },
+    testPrinter(printer_id) {
+      LNbits.api
+        .request(
+          'GET',
+          `${this.printerUrl}/check/${printer_id}`,
+          this.g.user.wallets[0].adminkey
+        )
+        .then(response => {
+            console.log(response)
+          Quasar.Notify.create({
+            message: 'Printer check successful',
+            color: 'positive',
+          })
+        })
+        .catch(LNbits.utils.notifyApiError)
+    },
+    openPrint(print_id) {
+      LNbits.api
+        .request(
+          'GET',
+          `${this.printUrl}/print/${print_id}`,
+          this.g.user.wallets[0].adminkey
+        )
+        .then(response => {
+          this.prints = response.data
+        })
+        .catch(LNbits.utils.notifyApiError)
+    },
+    deletePrint(id) {
+      LNbits.api
+        .request(
+          'DELETE',
+          `${this.printUrl}/${id}`,
+          this.g.user.wallets[0].adminkey
+        )
+        .then(_ => {
+          this.getPrints(this.printer)
+        })
+        .catch(LNbits.utils.notifyApiError)
+    },
     getPrinters() {
       LNbits.api
         .request('GET', this.printerUrl, this.g.user.wallets[0].inkey)

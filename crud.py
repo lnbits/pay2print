@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from lnbits.db import Database
+from lnbits.db import Connection, Database
 
 from .models import CreatePrinter, Print, Printer
 
@@ -18,9 +18,9 @@ async def create_print(payment_hash: str, printer_id: str, file_name: str) -> Pr
     return _print
 
 
-async def update_print(_print: Print) -> Print:
+async def update_print(_print: Print, conn: Optional[Connection] = None) -> Print:
     _print.updated_at = datetime.now(timezone.utc)
-    await db.update("pay2print.print", _print)
+    await (conn or db).update("pay2print.print", _print)
     return _print
 
 

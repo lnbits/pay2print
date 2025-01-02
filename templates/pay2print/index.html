@@ -136,7 +136,7 @@
               flat
               dense
               size="xs"
-              @click="openTestPrint(props.row.id)"
+              @click="testPrinter(props.row.id)"
               target="_blank"
               icon="print"
               color="primary"
@@ -198,6 +198,8 @@
     >
       <template v-slot:header="props">
         <q-tr :props="props">
+          <q-th style="width: 2%"></q-th>
+          <q-th style="width: 2%"></q-th>
           <q-th
             v-for="col in props.cols"
             :key="col.name"
@@ -211,6 +213,31 @@
 
       <template v-slot:body="props">
         <q-tr :props="props">
+          <q-td>
+            <q-btn
+              flat
+              dense
+              size="xs"
+              @click="openPrint(props.row.id)"
+              target="_blank"
+              icon="print"
+              color="primary"
+            >
+              <q-tooltip>Print</q-tooltip>
+            </q-btn>
+          </q-td>
+          <q-td>
+            <q-btn
+              flat
+              dense
+              size="xs"
+              @click="deletePrint(props.row.id)"
+              icon="cancel"
+              color="pink"
+            >
+              <q-tooltip>Delete Print</q-tooltip>
+            </q-btn>
+          </q-td>
           <q-td
             v-for="col in props.cols"
             :key="col.name"
