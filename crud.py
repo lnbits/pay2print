@@ -20,7 +20,9 @@ async def create_print(payment_hash: str, printer_id: str, file_name: str) -> Pr
 
 async def update_print(_print: Print, conn: Optional[Connection] = None) -> Print:
     _print.updated_at = datetime.now(timezone.utc)
-    await (conn or db).update("pay2print.print", _print)
+    await (conn or db).update(
+        "pay2print.print", _print, "WHERE payment_hash = :payment_hash"
+    )
     return _print
 
 
