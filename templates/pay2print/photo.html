@@ -5,17 +5,45 @@
     <q-card class="q-mt-md">
       <q-card-section v-if="invoice == null" class="q-mb-sm text-center">
         <h2 class="text-h5">
-          Upload a pdf file to print
+          Make a photo, upload and pay to print!
           <p v-text="invoiceAmount"></p>
         </h2>
-        <q-uploader
-          class="q-ml-auto q-mr-auto"
-          multiple="false"
-          field-name="file"
-          @uploaded="uploaded"
-          url="uploadUrl"
-        ></q-uploader>
+        <q-btn
+          v-if="webcam"
+          icon="camera"
+          @click="takePicture()"
+          size="1em"
+          color="primary"
+          class="q-mb-xs q-mt-sm cursor-pointer"
+          >Take picture</q-btn
+        >
+        <q-btn
+          v-if="picture"
+          icon="cloud_upload"
+          @click="uploadPicture()"
+          size="1em"
+          color="primary"
+          class="q-mb-xs q-mt-sm cursor-pointer"
+          >Upload and pay</q-btn
+        >
+        <q-btn
+          v-if="picture"
+          icon="cancel"
+          @click="reset"
+          size="1em"
+          color="secondary"
+          class="q-mb-xs q-mt-sm cursor-pointer"
+          >Cancel</q-btn
+        >
       </q-card-section>
+      <video
+        id="video"
+        ref="cameraStream"
+        autoplay
+        style="display: none"
+      ></video>
+      <p class="text-center" v-text="webcamError"></p>
+      <canvas ref="canvas" width="0" height="0"></canvas>
       <q-card-section
         v-if="invoice != null && paid == false"
         class="q-mb-sm text-center"

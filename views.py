@@ -37,3 +37,21 @@ async def public(printer_id: str, request: Request):
             "printer_name": printer.name,
         },
     )
+
+
+@pay2print_ext_generic.get("/photo/{printer_id}", response_class=HTMLResponse)
+async def photo(printer_id: str, request: Request):
+    printer = await get_printer(printer_id)
+    if not printer:
+        return template_renderer().TemplateResponse(
+            request, "error.html", {"err": "Printer not found"}, HTTPStatus.NOT_FOUND
+        )
+    return template_renderer(["pay2print/templates"]).TemplateResponse(
+        request,
+        "pay2print/photo.html",
+        {
+            "printer_id": printer_id,
+            "amount": printer.amount,
+            "printer_name": printer.name,
+        },
+    )

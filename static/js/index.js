@@ -120,10 +120,10 @@ window.app = Vue.createApp({
           this.g.user.wallets[0].adminkey
         )
         .then(response => {
-            console.log(response)
+          console.log(response)
           Quasar.Notify.create({
             message: 'Printer check successful',
-            color: 'positive',
+            color: 'positive'
           })
         })
         .catch(LNbits.utils.notifyApiError)

@@ -155,6 +155,16 @@
             >
               <q-tooltip>Public Page</q-tooltip>
             </q-btn>
+            <q-btn
+              flat
+              dense
+              size="xs"
+              icon="photo_camera"
+              color="secondary"
+              :href="`/pay2print/photo/${props.row.id}`"
+            >
+              <q-tooltip>Public Photo Page</q-tooltip>
+            </q-btn>
           </q-td>
           <q-td
             v-for="col in props.cols"

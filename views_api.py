@@ -78,13 +78,11 @@ async def api_upload_print(printer_id: str, file: UploadFile) -> UploadPayment:
         raise HTTPException(HTTPStatus.NOT_FOUND, "Printer not found.")
     if not file or not file.filename or not file.content_type:
         raise HTTPException(HTTPStatus.BAD_REQUEST, "No file uploaded.")
-    if "application/pdf" not in file.content_type:
-        raise HTTPException(HTTPStatus.BAD_REQUEST, "Only PDF files are supported.")
     upload_file_path = safe_file_name(file.filename)
     open(upload_file_path, "wb").write(await file.read())
     payment = await create_invoice(
         wallet_id=printer.wallet,
-        amount=100,
+        amount=printer.amount,
         memo=f"Print payment for file: {file.filename}",
         extra={"tag": "pay2print"},
     )
@@ -101,9 +99,7 @@ async def api_show_file(print_id: str) -> FileResponse:
     if not _print:
         raise HTTPException(HTTPStatus.NOT_FOUND, "Print not found.")
 
-    return FileResponse(
-        print_file_path(_print.file), media_type="application/pdf", filename=_print.file
-    )
+    return FileResponse(print_file_path(_print.file), filename=_print.file)
 
 
 @pay2print_ext_api.put("/printer/{printer_id}")
