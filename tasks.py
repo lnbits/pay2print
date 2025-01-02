@@ -20,9 +20,7 @@ async def wait_for_paid_invoices():
 async def on_invoice_paid(payment: Payment) -> None:
     if payment.extra.get("tag") == "pay2print":
         logger.info("pay2print extension received payment")
-        print_id = payment.extra.get("print_id")
-        assert print_id, "Print ID not found."
-        _print = await get_print(print_id)
+        _print = await get_print(payment.payment_hash)
         assert _print, "Print not found."
         printer = await get_printer(_print.printer)
         assert printer, "Printer not found."

@@ -42,7 +42,8 @@
         autoplay
         style="display: none"
       ></video>
-      <p class="text-center" v-text="webcamError"></p>
+      <h3 v-if="!webcam" class="text-h6 text-center">Device does not support camera!</h3>
+      <p class="text-center text-negative" v-text="webcamError"></p>
       <canvas ref="canvas" width="0" height="0"></canvas>
       <q-card-section
         v-if="invoice != null && paid == false"
