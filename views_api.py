@@ -117,10 +117,8 @@ async def api_update_printer(
     if key_info.wallet.user != printer.user_id:
         raise HTTPException(HTTPStatus.FORBIDDEN, "User not allowed to update printer.")
 
-    printer.wallet = data.wallet
-    printer.host = data.host
-    if data.name:
-        printer.name = data.name
+    for key, value in data.dict().items():
+        setattr(printer, key, value)
 
     return await update_printer(printer)
 

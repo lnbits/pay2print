@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional
 
 from lnbits.core.models import PaymentState
 from lnbits.helpers import urlsafe_short_hash
@@ -35,12 +34,12 @@ class Printer(BaseModel):
 
 
 class CreatePrinter(BaseModel):
+    name: str
     wallet: str
     host: str
     amount: int
     width: int
     height: int
-    name: Optional[str] = None
 
 
 class Print(BaseModel):

@@ -20,9 +20,8 @@ async def m001_initial(db: Connection):
     await db.execute(
         f"""
        CREATE TABLE pay2print.print (
-           id TEXT PRIMARY KEY,
+           payment_hash TEXT PRIMARY KEY,
            printer TEXT NOT NULL,
-           payment_hash TEXT NOT NULL,
            payment_status TEXT NOT NULL,
            print_status TEXT NOT NULL,
            file TEXT NOT NULL,
