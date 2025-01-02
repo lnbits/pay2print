@@ -42,7 +42,9 @@
         autoplay
         style="display: none"
       ></video>
-      <h3 v-if="!webcam" class="text-h6 text-center">Device does not support camera!</h3>
+      <h3 v-if="!webcam" class="text-h6 text-center">
+        Device does not support camera!
+      </h3>
       <p class="text-center text-negative" v-text="webcamError"></p>
       <canvas ref="canvas" width="0" height="0"></canvas>
       <q-card-section

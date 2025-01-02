@@ -24,10 +24,10 @@ async def update_print(_print: Print, conn: Optional[Connection] = None) -> Prin
     return _print
 
 
-async def get_print(print_id: str) -> Optional[Print]:
+async def get_print(payment_hash: str) -> Optional[Print]:
     return await db.fetchone(
-        "SELECT * FROM pay2print.print WHERE id = :id",
-        {"id": print_id},
+        "SELECT * FROM pay2print.print WHERE payment_hash = :payment_hash",
+        {"payment_hash": payment_hash},
         Print,
     )
 

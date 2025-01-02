@@ -44,7 +44,6 @@ class CreatePrinter(BaseModel):
 
 
 class Print(BaseModel):
-    id: str = Field(default_factory=urlsafe_short_hash)
     printer: str
     payment_hash: str
     file: str
