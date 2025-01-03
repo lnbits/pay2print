@@ -34,6 +34,13 @@ async def get_print(payment_hash: str) -> Optional[Print]:
     )
 
 
+async def delete_print(print_id: str) -> None:
+    await db.execute(
+        "DELETE FROM pay2print.print WHERE payment_hash = :id",
+        {"id": print_id},
+    )
+
+
 async def create_printer(user_id: str, data: CreatePrinter) -> Printer:
     printer = Printer(
         user_id=user_id,
@@ -61,13 +68,6 @@ async def get_prints(printer_id: str) -> list[Print]:
         """,
         {"printer": printer_id},
         model=Print,
-    )
-
-
-async def delete_print(print_id: str) -> None:
-    await db.execute(
-        "DELETE FROM pay2print.print WHERE id = :id",
-        {"id": print_id},
     )
 
 

@@ -2,101 +2,106 @@
 {% endblock %} {% block footer %}{% endblock %} {% block page_container %}
 <q-page-container>
   <q-page>
-    <q-card class="q-mt-md">
-      <q-card-section v-if="invoice == null" class="q-mb-sm text-center">
-        <h2 class="text-h5">
-          Make a photo, upload and pay to print!
-          <p v-text="invoiceAmount"></p>
-        </h2>
-        <q-btn
-          v-if="webcam"
-          icon="camera"
-          @click="takePicture()"
-          size="1em"
-          color="primary"
-          class="q-mb-xs q-mt-sm cursor-pointer"
-          >Take picture</q-btn
-        >
-        <q-btn
-          v-if="picture"
-          icon="cloud_upload"
-          @click="uploadPicture()"
-          size="1em"
-          color="primary"
-          class="q-mb-xs q-mt-sm cursor-pointer"
-          >Upload and pay</q-btn
-        >
-        <q-btn
-          v-if="picture"
-          icon="cancel"
-          @click="reset"
-          size="1em"
-          color="secondary"
-          class="q-mb-xs q-mt-sm cursor-pointer"
-          >Cancel</q-btn
-        >
-      </q-card-section>
-      <video
-        id="video"
-        ref="cameraStream"
-        autoplay
-        style="display: none"
-      ></video>
-      <h3 v-if="!webcam" class="text-h6 text-center">
-        Device does not support camera!
-      </h3>
-      <p class="text-center text-negative" v-text="webcamError"></p>
-      <canvas ref="canvas" width="0" height="0"></canvas>
-      <q-card-section
-        v-if="invoice != null && paid == false"
-        class="q-mb-sm text-center"
+    <div v-if="invoice == null" class="q-mb-sm text-center">
+      <h2 class="text-h5">
+        Make a photo, upload and pay to print!
+        <p v-text="invoiceAmount"></p>
+      </h2>
+      <q-btn
+        v-if="webcam"
+        icon="camera"
+        @click="takePicture()"
+        size="1em"
+        color="primary"
+        class="q-mb-xs q-mt-sm cursor-pointer"
+        >Take picture</q-btn
       >
-        <h2 class="text-h6">Pay this invoice to print!</h2>
-        <lnbits-qrcode :value="invoice"></lnbits-qrcode>
-        <q-btn
-          icon="content_copy"
-          @click="copyText(invoice)"
-          size="1em"
-          color="primary"
-          class="q-mb-xs q-mt-sm cursor-pointer"
-          >Copy invoice</q-btn
-        >
-        <q-btn
-          icon="refresh"
-          @click="reset()"
-          size="1em"
-          color="secondary"
-          class="q-ml-md q-mb-xs q-mt-sm cursor-pointer"
-          >Reset
-        </q-btn>
-      </q-card-section>
-      <q-card-section
-        v-if="invoice != null && paid == true"
-        class="q-mb-sm text-center"
+      <q-btn
+        v-if="picture"
+        icon="cloud_upload"
+        @click="uploadPicture()"
+        size="1em"
+        color="primary"
+        class="q-mb-xs q-mt-sm cursor-pointer"
+        >Upload and pay</q-btn
       >
-        <h2 class="text-h6">
-          <q-icon name="done" size="3em" color="green"></q-icon>
-          Invoice paid, document is printing!
-        </h2>
-        <div>
-          <q-icon name="print" size="3em" color="grey"></q-icon>
-        </div>
-        <q-btn
-          icon="refresh"
-          @click="reset()"
-          size="1em"
-          color="secondary"
-          class="q-mt-sm q-mb-xs cursor-pointer"
-          >Reset
-        </q-btn>
-      </q-card-section>
-    </q-card>
+      <q-btn
+        v-if="picture"
+        icon="cancel"
+        @click="reset"
+        size="1em"
+        color="secondary"
+        class="q-mb-xs q-mt-sm cursor-pointer"
+        >Cancel</q-btn
+      >
+    </div>
+    <video
+      id="video"
+      ref="cameraStream"
+      autoplay
+      style="
+        background: white;
+        display: none;
+        margin: auto;
+        width: 100%;
+        height: auto;
+      "
+    ></video>
+    <h3 v-if="webcamError" class="text-h6 text-center">
+      Device does not support camera!
+    </h3>
+    <p class="text-center text-negative" v-text="webcamError"></p>
+    <canvas
+      ref="canvas"
+      width="0"
+      height="0"
+      style="margin: auto; width: 100%"
+    ></canvas>
+    <div v-if="invoice != null && paid == false" class="q-mb-sm text-center">
+      <h2 class="text-h6">Pay this invoice to print!</h2>
+      <lnbits-qrcode :value="invoice"></lnbits-qrcode>
+      <q-btn
+        icon="content_copy"
+        @click="copyText(invoice)"
+        size="1em"
+        color="primary"
+        class="q-mb-xs q-mt-sm cursor-pointer"
+        >Copy invoice</q-btn
+      >
+      <q-btn
+        icon="refresh"
+        @click="reset()"
+        size="1em"
+        color="secondary"
+        class="q-ml-md q-mb-xs q-mt-sm cursor-pointer"
+        >Reset
+      </q-btn>
+    </div>
+    <div v-if="invoice != null && paid == true" class="q-mb-sm text-center">
+      <h2 class="text-h6">
+        <q-icon name="done" size="3em" color="green"></q-icon>
+        Invoice paid, document is printing!
+      </h2>
+      <div>
+        <q-icon name="print" size="3em" color="grey"></q-icon>
+      </div>
+      <q-btn
+        icon="refresh"
+        @click="reset()"
+        size="1em"
+        color="secondary"
+        class="q-mt-sm q-mb-xs cursor-pointer"
+        >Reset
+      </q-btn>
+    </div>
   </q-page>
 </q-page-container>
 {% endblock %} {% block scripts %}
 <script>
   const amount = {{ amount }};
   const printer_id = "{{ printer_id }}";
+  const width = {{ width }};
+  const height = {{ height }};
 </script>
 <script src="{{ static_url_for('pay2print/static', path='js/public.js') }}"></script>
 {% endblock %}

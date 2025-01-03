@@ -16,7 +16,9 @@ window.app = Vue.createApp({
     if (this.$refs.cameraStream) {
       navigator.mediaDevices
         .getUserMedia({
-          video: {FacingMode: {exact: 'environment'}},
+          video: {
+            FacingMode: 'user'
+          },
           audio: false
         })
         .then(stream => {
@@ -32,15 +34,39 @@ window.app = Vue.createApp({
     }
   },
   methods: {
+    mmToPx(mm) {
+      const dpi = 300
+      return Math.floor((mm * dpi) / 25.4)
+    },
     takePicture() {
       this.picture = true
       this.webcam = false
       this.$refs.cameraStream.style.display = 'none'
-      this.$refs.canvas.width = this.$refs.cameraStream.videoWidth
-      this.$refs.canvas.height = this.$refs.cameraStream.videoHeight
-      this.$refs.canvas
-        .getContext('2d')
-        .drawImage(this.$refs.cameraStream, 0, 0)
+      const targetWidth = this.mmToPx(width)
+      const targetHeight = this.mmToPx(height)
+      this.$refs.canvas.width = targetWidth
+      this.$refs.canvas.height = targetHeight
+      const originalWidth = this.$refs.cameraStream.videoWidth
+      const originalHeight = this.$refs.cameraStream.videoHeight
+      const hRatio = targetWidth / originalWidth
+      const vRatio = targetHeight / originalHeight
+      const ratio = Math.min(hRatio, vRatio)
+      const centerShift_x = (targetWidth - originalWidth * ratio) / 2
+      const centerShift_y = (targetHeight - originalHeight * ratio) / 2
+      const ctx = this.$refs.canvas.getContext('2d')
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(0, 0, targetWidth, targetHeight)
+      ctx.drawImage(
+        this.$refs.cameraStream,
+        0,
+        0,
+        originalWidth,
+        originalHeight,
+        centerShift_x,
+        centerShift_y,
+        originalWidth * ratio,
+        originalHeight * ratio
+      )
     },
     uploadPicture() {
       this.$refs.canvas.toBlob(blob => {

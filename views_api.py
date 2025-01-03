@@ -10,6 +10,7 @@ from lnbits.decorators import check_user_exists, require_admin_key, require_invo
 from .crud import (
     create_print,
     create_printer,
+    delete_print,
     delete_printer,
     get_print,
     get_printer,
@@ -91,6 +92,16 @@ async def api_upload_print(printer_id: str, file: UploadFile) -> UploadPayment:
     return UploadPayment(
         payment_hash=payment.payment_hash, payment_request=payment.bolt11
     )
+
+
+@pay2print_ext_api.delete(
+    "/print/{print_id}", dependencies=[Depends(require_admin_key)]
+)
+async def api_delete_print(print_id: str) -> None:
+    _print = await get_print(print_id)
+    if not _print:
+        raise HTTPException(HTTPStatus.NOT_FOUND, "Print not found.")
+    await delete_print(print_id)
 
 
 @pay2print_ext_api.get("/file/{print_id}", dependencies=[Depends(check_user_exists)])

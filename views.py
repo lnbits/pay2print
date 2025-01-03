@@ -35,6 +35,8 @@ async def public(printer_id: str, request: Request):
             "printer_id": printer_id,
             "amount": printer.amount,
             "printer_name": printer.name,
+            "width": printer.width,
+            "height": printer.height,
         },
     )
 
@@ -53,5 +55,7 @@ async def photo(printer_id: str, request: Request):
             "printer_id": printer_id,
             "amount": printer.amount,
             "printer_name": printer.name,
+            "width": printer.width,
+            "height": printer.height,
         },
     )

@@ -39,14 +39,14 @@
         dense
         v-model.trim="printerDialog.data.width"
         type="text"
-        label="Width *"
+        label="Width (mm) *"
       ></q-input>
       <q-input
         filled
         dense
         v-model.trim="printerDialog.data.height"
         type="text"
-        label="Height *"
+        label="Height (mm) *"
       ></q-input>
       <div class="row q-mt-lg">
         <q-btn
@@ -228,7 +228,7 @@
               flat
               dense
               size="xs"
-              @click="openPrint(props.row.id)"
+              @click="openPrint(props.row.payment_hash)"
               target="_blank"
               icon="print"
               color="primary"
@@ -241,7 +241,7 @@
               flat
               dense
               size="xs"
-              @click="deletePrint(props.row.id)"
+              @click="deletePrint(props.row.payment_hash)"
               icon="cancel"
               color="pink"
             >

@@ -98,7 +98,7 @@ window.app = Vue.createApp({
     },
     openFile(file_name) {
       const print = this.prints.find(print => print.file === file_name)
-      return `/pay2print/api/v1/file/${print.id}`
+      return `/pay2print/api/v1/file/${print.payment_hash}`
     },
     getPrints(printer_id) {
       LNbits.api

@@ -29,4 +29,4 @@ async def on_invoice_paid(payment: Payment) -> None:
         try:
             await print_service(_print, printer)
         except Exception as exc:
-            logger.error(f"Error printing {_print.id}: {exc}")
+            logger.error(f"Error printing {_print.payment_hash}: {exc}")
