@@ -9,6 +9,7 @@ window.app = Vue.createApp({
       paid: false,
       webcam: false,
       picture: null,
+      message: '',
       webcamError: ''
     }
   },
@@ -67,6 +68,27 @@ window.app = Vue.createApp({
         originalWidth * ratio,
         originalHeight * ratio
       )
+    },
+    uploadText() {
+      if (this.message.length === 0) return
+      const blob = new Blob([this.message], {type: 'plain/text'})
+      const formData = new FormData()
+      formData.append('file', blob, 'message.txt')
+      axios
+        .post(this.uploadUrl, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        .then(response => {
+          this.invoice = response.data.payment_request
+          this.onPaid(response.data.payment_hash)
+          Quasar.Notify.create({
+            color: 'positive',
+            message: 'Text uploaded successfully'
+          })
+        })
+        .catch(LNbits.utils.notifyApiError)
     },
     uploadPicture() {
       this.$refs.canvas.toBlob(blob => {

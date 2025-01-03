@@ -1,0 +1,82 @@
+{% extends "public.html" %} {% block toolbar_title %} Printer {{ printer_id }}
+{% endblock %} {% block footer %}{% endblock %} {% block page_container %}
+<q-page-container>
+  <q-page>
+    <q-card class="q-mt-md">
+      <q-card-section v-if="invoice == null" class="q-mb-sm text-center">
+        <h2 class="text-h5">
+          Write a message to print
+          <p v-text="invoiceAmount"></p>
+        </h2>
+        <q-input
+          v-model="message"
+          label="Message"
+          type="text"
+          length="100"
+          dense
+          outlined
+          class="q-mb-md"
+        ></q-input>
+        <q-btn
+          icon="cloud_upload"
+          @click="uploadText()"
+          size="1em"
+          color="primary"
+          class="q-mb-xs q-mt-sm cursor-pointer"
+          :disable="message == null || message.length == 0"
+          >Upload and pay</q-btn
+        >
+      </q-card-section>
+      <q-card-section
+        v-if="invoice != null && paid == false"
+        class="q-mb-sm text-center"
+      >
+        <h2 class="text-h6">Pay this invoice to print!</h2>
+        <lnbits-qrcode :value="invoice"></lnbits-qrcode>
+        <q-btn
+          icon="content_copy"
+          @click="copyText(invoice)"
+          size="1em"
+          color="primary"
+          class="q-mb-xs q-mt-sm cursor-pointer"
+          >Copy invoice</q-btn
+        >
+        <q-btn
+          icon="refresh"
+          @click="reset()"
+          size="1em"
+          color="secondary"
+          class="q-ml-md q-mb-xs q-mt-sm cursor-pointer"
+          >Reset
+        </q-btn>
+      </q-card-section>
+      <q-card-section
+        v-if="invoice != null && paid == true"
+        class="q-mb-sm text-center"
+      >
+        <h2 class="text-h6">
+          <q-icon name="done" size="3em" color="green"></q-icon>
+          Invoice paid, printing!
+        </h2>
+        <div>
+          <q-icon name="print" size="3em" color="grey"></q-icon>
+        </div>
+        <q-btn
+          icon="refresh"
+          @click="reset()"
+          size="1em"
+          color="secondary"
+          class="q-mt-sm q-mb-xs cursor-pointer"
+          >Reset
+        </q-btn>
+      </q-card-section>
+    </q-card>
+  </q-page>
+</q-page-container>
+{% endblock %} {% block scripts %}
+<script>
+  const amount = {{ amount }};
+  const printer_id = "{{ printer_id }}";
+</script>
+<script src="{{ static_url_for('pay2print/static', path='js/public.js') }}"></script>
+{% endblock %}

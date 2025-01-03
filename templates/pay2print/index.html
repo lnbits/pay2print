@@ -165,6 +165,16 @@
             >
               <q-tooltip>Public Photo Page</q-tooltip>
             </q-btn>
+            <q-btn
+              flat
+              dense
+              size="xs"
+              icon="text_fields"
+              color="secondary"
+              :href="`/pay2print/text/${props.row.id}`"
+            >
+              <q-tooltip>Public Text Page</q-tooltip>
+            </q-btn>
           </q-td>
           <q-td
             v-for="col in props.cols"
@@ -210,6 +220,7 @@
         <q-tr :props="props">
           <q-th style="width: 2%"></q-th>
           <q-th style="width: 2%"></q-th>
+          <q-th style="width: 2%"></q-th>
           <q-th
             v-for="col in props.cols"
             :key="col.name"
@@ -228,10 +239,23 @@
               flat
               dense
               size="xs"
+              :href="openFile(props.row.payment_hash)"
+              target="_blank"
+              icon="download"
+              color="primary"
+            >
+              <q-tooltip>Download</q-tooltip>
+            </q-btn>
+          </q-td>
+          <q-td>
+            <q-btn
+              flat
+              dense
+              size="xs"
               @click="openPrint(props.row.payment_hash)"
               target="_blank"
               icon="print"
-              color="primary"
+              color="secondary"
             >
               <q-tooltip>Print</q-tooltip>
             </q-btn>
@@ -254,16 +278,7 @@
             :props="props"
             auto-width
           >
-            <div v-if="col.name === 'file'">
-              <q-btn
-                color="primary"
-                size="sm"
-                :href="openFile(col.value)"
-                target="_blank"
-                v-text="col.value"
-              ></q-btn>
-            </div>
-            <div v-else v-text="col.value"></div>
+            <div v-text="col.value"></div>
           </q-td>
         </q-tr>
       </template>

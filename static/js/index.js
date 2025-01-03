@@ -12,16 +12,16 @@ window.app = Vue.createApp({
       printsTable: {
         columns: [
           {
+            name: 'payment_hash',
+            align: 'left',
+            label: 'payment_hash',
+            field: 'payment_hash'
+          },
+          {
             name: 'file',
             align: 'left',
             label: 'file',
             field: 'file'
-          },
-          {
-            name: 'id',
-            align: 'left',
-            label: 'id',
-            field: 'id'
           },
           {
             name: 'print_status',
@@ -96,9 +96,8 @@ window.app = Vue.createApp({
       this.printerDialog.data = {...printer}
       this.printerDialog.show = true
     },
-    openFile(file_name) {
-      const print = this.prints.find(print => print.file === file_name)
-      return `/pay2print/api/v1/file/${print.payment_hash}`
+    openFile(payment_hash) {
+      return `/pay2print/api/v1/file/${payment_hash}`
     },
     getPrints(printer_id) {
       LNbits.api

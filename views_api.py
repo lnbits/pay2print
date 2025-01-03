@@ -3,7 +3,7 @@ from http import HTTPStatus
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from lnbits.core.crud import get_wallet
-from lnbits.core.models import WalletTypeInfo
+from lnbits.core.models import User, WalletTypeInfo
 from lnbits.core.services import create_invoice
 from lnbits.decorators import check_user_exists, require_admin_key, require_invoice_key
 
@@ -104,11 +104,18 @@ async def api_delete_print(print_id: str) -> None:
     await delete_print(print_id)
 
 
-@pay2print_ext_api.get("/file/{print_id}", dependencies=[Depends(check_user_exists)])
-async def api_show_file(print_id: str) -> FileResponse:
+@pay2print_ext_api.get("/file/{print_id}")
+async def api_show_file(
+    print_id: str, user: User = Depends(check_user_exists)
+) -> FileResponse:
     _print = await get_print(print_id)
     if not _print:
         raise HTTPException(HTTPStatus.NOT_FOUND, "Print not found.")
+    printer = await get_printer(_print.printer)
+    if not printer:
+        raise HTTPException(HTTPStatus.NOT_FOUND, "Printer not found.")
+    if printer.user_id != user.id:
+        raise HTTPException(HTTPStatus.FORBIDDEN, "Not your print.")
 
     return FileResponse(print_file_path(_print.file), filename=_print.file)
 
