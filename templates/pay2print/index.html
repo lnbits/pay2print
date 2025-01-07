@@ -2,6 +2,23 @@
 %} {% block scripts %} {{ window_vars(user) }}
 <script src="{{ static_url_for('pay2print/static', path='js/index.js') }}"></script>
 {% endblock %} {% block page %}
+<q-dialog v-model="qrDialog.show" position="top">
+  <q-card class="q-pa-lg q-pt-xl text-center lnbits__dialog-card">
+    <lnbits-qrcode :value="qrDialog.data.lnurl"></lnbits-qrcode>
+    <q-btn
+      unelevated
+      color="primary"
+      @click="copyText(qrDialog.data.lnurl)"
+      class="q-mt-md q-mr-sm"
+      >Copy LNURL</q-btn>
+    <q-btn
+      unelevated
+      color="primary"
+      @click="qrDialog.show = false"
+      class="q-mt-md"
+      >Close</q-btn>
+    </q-card>
+</q-dialog>
 <q-dialog v-model="printerDialog.show" position="top">
   <q-card class="q-pa-lg q-pt-xl lnbits__dialog-card">
     <q-form @submit="submitPrinterForm" class="q-gutter-md">
@@ -174,6 +191,16 @@
               :href="`/pay2print/text/${props.row.id}`"
             >
               <q-tooltip>Public Text Page</q-tooltip>
+            </q-btn>
+            <q-btn
+              flat
+              dense
+              size="xs"
+              icon="qr_code"
+              color="secondary"
+              @click="openLnurlQrCode(props.row.id)"
+            >
+              <q-tooltip>LNURL QRCode</q-tooltip>
             </q-btn>
           </q-td>
           <q-td

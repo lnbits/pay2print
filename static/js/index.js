@@ -68,6 +68,10 @@ window.app = Vue.createApp({
       printerDialog: {
         show: false,
         data: {}
+      },
+      qrDialog: {
+        show: false,
+        data: {}
       }
     }
   },
@@ -95,6 +99,12 @@ window.app = Vue.createApp({
       const printer = this.printers.find(printer => printer.id === printer_id)
       this.printerDialog.data = {...printer}
       this.printerDialog.show = true
+    },
+    openLnurlQrCode(printer_id) {
+        // const printer = this.printers.find(printer => printer.id === printer_id)
+        const lnurl = `${window.location.origin}/pay2print/api/v1/lnurl/${printer_id}`
+        this.qrDialog.data = { lnurl: lnurl }
+        this.qrDialog.show = true
     },
     openFile(payment_hash) {
       return `/pay2print/api/v1/file/${payment_hash}`
