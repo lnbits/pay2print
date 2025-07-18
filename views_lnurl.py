@@ -1,20 +1,17 @@
 import json
 from http import HTTPStatus
-from typing import Union
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from lnbits.core.services import create_invoice
-from lnbits.lnurl import LnurlErrorResponseHandler
-from lnurl import LnurlPayActionResponse, LnurlPayResponse
-from lnurl.models import MessageAction
-from lnurl.types import (
-    ClearnetUrl,
-    DebugUrl,
+from lnurl import (
+    CallbackUrl,
     LightningInvoice,
+    LnurlPayActionResponse,
     LnurlPayMetadata,
+    LnurlPayResponse,
     Max144Str,
+    MessageAction,
     MilliSatoshi,
-    OnionUrl,
 )
 from pydantic import parse_obj_as
 
@@ -24,7 +21,6 @@ from .crud import (
 )
 
 pay2print_lnurl_router = APIRouter()
-pay2print_lnurl_router.route_class = LnurlErrorResponseHandler
 
 
 @pay2print_lnurl_router.get(
@@ -39,10 +35,8 @@ async def api_lnurl_response(request: Request, printer_id: str) -> LnurlPayRespo
             status_code=HTTPStatus.NOT_FOUND, detail="Printer does not exist."
         )
     url = request.url_for("pay2print.api_lnurl_callback", printer_id=printer_id)
-    callback_url: Union[DebugUrl, OnionUrl, ClearnetUrl] = parse_obj_as(
-        Union[DebugUrl, OnionUrl, ClearnetUrl],  # type: ignore
-        str(url),
-    )
+    callback_url = parse_obj_as(CallbackUrl, str(url))
+
     return LnurlPayResponse(
         callback=callback_url,
         minSendable=MilliSatoshi(printer.amount * 1000),
@@ -50,6 +44,11 @@ async def api_lnurl_response(request: Request, printer_id: str) -> LnurlPayRespo
         metadata=LnurlPayMetadata(
             json.dumps([["text/plain", f"Pay to print {printer.name}"]])
         ),
+        # TODO remove after lnurl lib update
+        commentAllowed=None,
+        payerData=None,
+        allowsNostr=None,
+        nostrPubkey=None,
     )
 
 
