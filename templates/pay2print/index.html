@@ -10,14 +10,16 @@
       color="primary"
       @click="copyText(qrDialog.data.lnurl)"
       class="q-mt-md q-mr-sm"
-      >Copy LNURL</q-btn>
+      >Copy LNURL</q-btn
+    >
     <q-btn
       unelevated
       color="primary"
       @click="qrDialog.show = false"
       class="q-mt-md"
-      >Close</q-btn>
-    </q-card>
+      >Close</q-btn
+    >
+  </q-card>
 </q-dialog>
 <q-dialog v-model="printerDialog.show" position="top">
   <q-card class="q-pa-lg q-pt-xl lnbits__dialog-card">
