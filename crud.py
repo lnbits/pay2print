@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from typing import Optional
 
 from lnbits.db import Connection, Database
 
@@ -18,7 +17,7 @@ async def create_print(payment_hash: str, printer_id: str, file_name: str) -> Pr
     return _print
 
 
-async def update_print(_print: Print, conn: Optional[Connection] = None) -> Print:
+async def update_print(_print: Print, conn: Connection | None = None) -> Print:
     _print.updated_at = datetime.now(timezone.utc)
     await (conn or db).update(
         "pay2print.print", _print, "WHERE payment_hash = :payment_hash"
@@ -26,7 +25,7 @@ async def update_print(_print: Print, conn: Optional[Connection] = None) -> Prin
     return _print
 
 
-async def get_print(payment_hash: str) -> Optional[Print]:
+async def get_print(payment_hash: str) -> Print | None:
     return await db.fetchone(
         "SELECT * FROM pay2print.print WHERE payment_hash = :payment_hash",
         {"payment_hash": payment_hash},
@@ -71,7 +70,7 @@ async def get_prints(printer_id: str) -> list[Print]:
     )
 
 
-async def get_printer(printer_id: str) -> Optional[Printer]:
+async def get_printer(printer_id: str) -> Printer | None:
     return await db.fetchone(
         "SELECT * FROM pay2print.printer WHERE id = :id",
         {"id": printer_id},
