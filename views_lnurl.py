@@ -1,11 +1,11 @@
 import json
-from http import HTTPStatus
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, Query, Request
 from lnbits.core.services import create_invoice
 from lnurl import (
     CallbackUrl,
     LightningInvoice,
+    LnurlErrorResponse,
     LnurlPayActionResponse,
     LnurlPayMetadata,
     LnurlPayResponse,
@@ -23,17 +23,13 @@ from .crud import (
 pay2print_lnurl_router = APIRouter()
 
 
-@pay2print_lnurl_router.get(
-    "/api/v1/lnurl/{printer_id}",
-    status_code=HTTPStatus.OK,
-    name="pay2print.api_lnurl_response",
-)
-async def api_lnurl_response(request: Request, printer_id: str) -> LnurlPayResponse:
+@pay2print_lnurl_router.get("/api/v1/lnurl/{printer_id}")
+async def api_lnurl_response(
+    request: Request, printer_id: str
+) -> LnurlPayResponse | LnurlErrorResponse:
     printer = await get_printer(printer_id)
     if not printer:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Printer does not exist."
-        )
+        return LnurlErrorResponse(reason="Printer does not exist.")
     url = request.url_for("pay2print.api_lnurl_callback", printer_id=printer_id)
     callback_url = parse_obj_as(CallbackUrl, str(url))
 
@@ -44,33 +40,22 @@ async def api_lnurl_response(request: Request, printer_id: str) -> LnurlPayRespo
         metadata=LnurlPayMetadata(
             json.dumps([["text/plain", f"Pay to print {printer.name}"]])
         ),
-        # TODO remove after lnurl lib update
-        commentAllowed=None,
-        payerData=None,
-        allowsNostr=None,
-        nostrPubkey=None,
     )
 
 
 @pay2print_lnurl_router.get(
     "/api/v1/lnurl/cb/{printer_id}",
-    status_code=HTTPStatus.OK,
     name="pay2print.api_lnurl_callback",
 )
 async def api_lnurl_callback(
     printer_id: str,
     amount: int = Query(...),
-) -> LnurlPayActionResponse:
+) -> LnurlPayActionResponse | LnurlErrorResponse:
     printer = await get_printer(printer_id)
     if not printer:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="Printer does not exist."
-        )
+        return LnurlErrorResponse(reason="Printer does not exist.")
     if amount != printer.amount:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail=f"Amount must be {printer.amount}.",
-        )
+        return LnurlErrorResponse(reason=f"Amount must be {printer.amount}.")
     payment = await create_invoice(
         wallet_id=printer.wallet,
         amount=printer.amount,
@@ -81,4 +66,4 @@ async def api_lnurl_callback(
     message = parse_obj_as(Max144Str, "Printing! Thank you")
     action = MessageAction(message=message)
     invoice = parse_obj_as(LightningInvoice, LightningInvoice(payment.bolt11))
-    return LnurlPayActionResponse(pr=invoice, successAction=action, routes=[])
+    return LnurlPayActionResponse(pr=invoice, successAction=action)
